@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum DeliveryMethod {
+  PICKUP
+  DELIVERY
+  COUNTRYWIDE // FedEx pay-forward, client pays courier at collection
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  ECOCASH
+  BANK_TRANSFER
+  IN_STORE
+  PAYNOW
+}
+
+enum PaymentStatus {
+  UNPAID
+  AWAITING // Paynow initiated, awaiting confirmation
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  role         Role      @default(CLIENT)
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+  bookings     Booking[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String
+  specs           String? // JSON string of key/value specs
+  price           Float
+  compareAtPrice  Float?
+  stock           Int      @default(0)
+  image           String?
+  badge           String? // e.g. "Best Seller", "New", "Sale"
+  featured        Boolean  @default(false)
+  rating          Float    @default(5)
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime @default(now())
+  items           OrderItem[]
+}
+
+model Order {
+  id             String         @id @default(cuid())
+  orderNumber    String         @unique
+  userId         String?
+  user           User?          @relation(fields: [userId], references: [id])
+  customerName   String
+  email          String
+  phone          String
+  subtotal       Float
+  deliveryFee    Float          @default(0)
+  total          Float
+  deliveryMethod DeliveryMethod @default(PICKUP)
+  address        String?
+  suburb         String?
+  zoneName       String?
+  paymentMethod  PaymentMethod  @default(CASH_ON_DELIVERY)
+  paymentStatus  PaymentStatus  @default(UNPAID)
+  paymentRef     String? // Paynow poll URL / reference
+  status         OrderStatus    @default(PENDING)
+  city           String? // countrywide destination town/city
+  notes          String?
+  createdAt      DateTime       @default(now())
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  qty       Int
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id])
+  name          String
+  phone         String
+  email         String?
+  device        String
+  serviceType   String
+  description   String?
+  preferredDate String?
+  status        BookingStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+}
+
+model DeliveryZone {
+  id      String  @id @default(cuid())
+  name    String
+  minKm   Float
+  maxKm   Float
+  fee     Float
+  suburbs String // comma-separated suburb names
+  active  Boolean @default(true)
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model HeroSlide {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  image       String // banner image URL or /uploads path
+  ctaLabel    String   @default("Shop Now")
+  ctaHref     String   @default("/shop")
+  cta2Label   String?
+  cta2Href    String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  image       String? // uploaded illustration URL
+  category    String // grouping shown on services page
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Driver {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  vehicle   String // e.g. "Motorbike", "Sedan — InDrive"
+  zones     String? // comma-separated zones they cover
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String // ORDER, BOOKING, PAYMENT, CONTACT
+  title     String
+  body      String
+  link      String? // admin deep-link e.g. /admin/orders
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

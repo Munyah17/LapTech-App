@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Design tokens — LapTech brand (blue ramp, light + dark) ===== */
+:root {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --background: 248 249 252; /* off-white */
+  --foreground: 31 41 55;
+  --card: 255 255 255;
+  --card-foreground: 31 41 55;
+  --muted: 243 244 246;
+  --muted-foreground: 107 114 128;
+  --border: 229 231 235;
+  --input: 255 255 255;
+  --ring: 37 87 235;
+
+  --primary: 37 87 235; /* brand-600 */
+  --primary-foreground: 255 255 255;
+
+  --success: 5 150 105;
+  --success-soft: 209 250 229;
+  --warning: 217 119 6;
+  --warning-soft: 254 243 199;
+  --destructive: 220 38 38;
+  --destructive-soft: 254 226 226;
+  --info: 37 99 235;
+  --info-soft: 219 234 254;
+}
+
+.dark {
+  --background: 15 23 42;
+  --foreground: 226 232 240;
+  --card: 30 41 59;
+  --card-foreground: 226 232 240;
+  --muted: 51 65 85;
+  --muted-foreground: 148 163 184;
+  --border: 51 65 85;
+  --input: 30 41 59;
+  --ring: 96 144 250;
+
+  --primary: 96 144 250;
+  --primary-foreground: 15 23 42;
+
+  --success-soft: 6 78 59;
+  --warning-soft: 120 53 15;
+  --destructive-soft: 127 29 29;
+  --info-soft: 30 58 138;
+}
+
+@layer base {
+  * {
+    border-color: rgb(var(--border));
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  /* Numbers in tables/stats use tabular figures */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .bg-card { background-color: rgb(var(--card)); }
+  .text-card-foreground { color: rgb(var(--card-foreground)); }
+  .bg-muted-soft { background-color: rgb(var(--muted) / 0.5); }
+  .text-muted-foreground { color: rgb(var(--muted-foreground)); }
+  .bg-primary { background-color: rgb(var(--primary)); }
+  .text-primary { color: rgb(var(--primary)); }
+  .text-primary-foreground { color: rgb(var(--primary-foreground)); }
+
+  .bg-success-soft { background-color: rgb(var(--success-soft)); }
+  .text-success { color: rgb(var(--success)); }
+  .bg-warning-soft { background-color: rgb(var(--warning-soft)); }
+  .text-warning { color: rgb(var(--warning)); }
+  .bg-destructive-soft { background-color: rgb(var(--destructive-soft)); }
+  .text-destructive { color: rgb(var(--destructive)); }
+  .bg-info-soft { background-color: rgb(var(--info-soft)); }
+  .text-info { color: rgb(var(--info)); }
+
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
