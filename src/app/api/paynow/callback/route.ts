@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { amountMatches, getPaynow, isPaidStatus } from "@/lib/paynow";
+import { notifyPaymentReceived } from "@/lib/notify";
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 
@@ -118,6 +119,14 @@ export async function POST(req: Request) {
         link: "/admin/orders",
       },
     });
+
+    if (paid) {
+      const paidOrder = await db.order.findUnique({
+        where: { id: order.id },
+        include: { items: true },
+      });
+      if (paidOrder) void notifyPaymentReceived(paidOrder).catch(console.error);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {

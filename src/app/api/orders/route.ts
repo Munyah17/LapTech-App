@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getZoneForSuburb } from "@/lib/delivery";
+import { notifyOrderPlaced } from "@/lib/notify";
 import { NextResponse } from "next/server";
 
 interface OrderItemInput {
@@ -146,6 +147,12 @@ export async function POST(req: Request) {
         link: "/admin/orders",
       },
     });
+
+    const orderForEmail = await db.order.findUnique({
+      where: { id: order.id },
+      include: { items: true },
+    });
+    if (orderForEmail) void notifyOrderPlaced(orderForEmail).catch(console.error);
 
     return NextResponse.json({
       ok: true,

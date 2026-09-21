@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { SITE } from "@/lib/site";
@@ -7,6 +8,10 @@ import { ChangePasswordForm } from "./change-password-form";
 export const metadata: Metadata = { title: "Settings" };
 
 export default function AdminSettingsPage() {
+  const emailConfigured = Boolean(
+    process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
+  );
+
   return (
     <>
       <PageHeader title="Settings" description="Shop configuration and account." />
@@ -63,6 +68,20 @@ export default function AdminSettingsPage() {
           </CardHeader>
           <CardContent>
             <ChangePasswordForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Email Notifications</CardTitle>
+            <CardDescription>Order, payment, and booking updates.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Badge tone={emailConfigured ? "success" : "neutral"}>
+              {emailConfigured
+                ? "Email notifications: configured"
+                : "Email notifications: not configured (set SMTP_* env vars)"}
+            </Badge>
           </CardContent>
         </Card>
       </div>

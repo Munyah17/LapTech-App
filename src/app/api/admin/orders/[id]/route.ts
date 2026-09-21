@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyOrderStatus } from "@/lib/notify";
 import { NextResponse } from "next/server";
 
 const validStatuses = [
@@ -25,6 +26,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
+  const existing = await db.order.findUnique({ where: { id } });
+  if (!existing) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  const changed = existing.status !== status;
   await db.order.update({ where: { id }, data: { status } });
+  if (changed) {
+    const order = await db.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    if (order) void notifyOrderStatus(order).catch(console.error);
+  }
   return NextResponse.json({ ok: true });
 }

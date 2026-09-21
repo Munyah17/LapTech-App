@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyBookingCreated } from "@/lib/notify";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
         link: "/admin/bookings",
       },
     });
+
+    void notifyBookingCreated(booking).catch(console.error);
 
     return NextResponse.json({ ok: true });
   } catch (e) {
