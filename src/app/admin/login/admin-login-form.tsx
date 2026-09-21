@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/input";
+import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -38,30 +37,43 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Field label="Email" htmlFor="email" required>
-        <Input
+    <form onSubmit={handleSubmit}>
+      <div className="input-group mb-3">
+        <input
           id="email"
           name="email"
           type="email"
           required
           autoComplete="email"
           placeholder="admin@laptech.co.zw"
+          className="form-control"
         />
-      </Field>
-      <Field label="Password" htmlFor="password" required>
-        <Input
+        <span className="input-group-text">
+          <Mail className="size-4" aria-hidden />
+        </span>
+      </div>
+      <div className="input-group mb-3">
+        <input
           id="password"
           name="password"
           type="password"
           required
           autoComplete="current-password"
+          placeholder="Password"
+          className="form-control"
         />
-      </Field>
-      {error && <p className="text-[12.5px] text-destructive">{error}</p>}
-      <Button type="submit" loading={loading} className="w-full">
-        Sign In
-      </Button>
+        <span className="input-group-text">
+          <Lock className="size-4" aria-hidden />
+        </span>
+      </div>
+      {error && (
+        <p className="text-[12.5px] text-destructive mb-3">{error}</p>
+      )}
+      <div className="d-grid">
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Signing in…" : "Sign In"}
+        </button>
+      </div>
     </form>
   );
 }

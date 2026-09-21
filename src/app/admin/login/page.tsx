@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { AdminLoginForm } from "./admin-login-form";
 
@@ -11,30 +12,33 @@ export default async function AdminLoginPage() {
   if (session?.role === "ADMIN") redirect("/admin");
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
+    <div className="login-box">
+      <div className="login-logo mb-2">
+        <Link href="/" className="inline-flex flex-col items-center gap-2">
           <Image
             src="/logo.png"
             alt="LapTech"
             width={140}
             height={48}
-            className="h-11 w-auto mx-auto mb-4 brightness-0 invert"
+            className="h-11 w-auto"
+            priority
           />
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
             Admin Console
-          </h1>
-          <p className="text-[13px] text-slate-400 mt-1">
+          </span>
+        </Link>
+      </div>
+      <div className="card shadow">
+        <div className="card-body login-card-body">
+          <p className="login-box-msg">
             Sign in with your administrator account
           </p>
-        </div>
-        <div className="bg-card rounded-2xl border p-6 shadow-xl">
           <AdminLoginForm />
         </div>
-        <p className="text-center text-[12px] text-slate-500 mt-6">
-          Authorized personnel only
-        </p>
       </div>
+      <p className="text-center text-[12px] text-muted-foreground mt-4">
+        Authorized personnel only
+      </p>
     </div>
   );
 }

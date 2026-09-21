@@ -1,14 +1,15 @@
 "use client";
 
 import type { SessionUser } from "@/lib/auth";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import {
   Bike,
   CalendarCheck,
+  ChevronsLeft,
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
-  Menu,
   Package,
   Settings,
   ShoppingBag,
@@ -16,12 +17,11 @@ import {
   Truck,
   Users,
   Wrench,
-  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { NotificationBell } from "./notification-bell";
 
 const nav = [
@@ -55,6 +55,71 @@ const nav = [
   },
 ];
 
+function UserMenu({ user }: { user: SessionUser }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  }
+
+  return (
+    <li ref={ref} className="nav-item relative">
+      <button
+        className="nav-link flex items-center gap-2"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[12px] font-bold">
+          {user.name.charAt(0).toUpperCase()}
+        </span>
+        <span className="d-none d-md-inline text-[13px] font-medium">
+          {user.name}
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-56 bg-card border rounded-xl shadow-xl overflow-hidden z-50">
+          <div className="px-4 py-3 border-b">
+            <p className="text-[13px] font-semibold truncate">{user.name}</p>
+            <p className="text-[11.5px] text-muted-foreground truncate">
+              {user.email}
+            </p>
+          </div>
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-muted/60 transition-colors"
+          >
+            <Store className="size-4 text-muted-foreground" aria-hidden />
+            View Store
+          </Link>
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-destructive hover:bg-muted/60 transition-colors text-left"
+          >
+            <LogOut className="size-4" aria-hidden />
+            Sign Out
+          </button>
+        </div>
+      )}
+    </li>
+  );
+}
+
 export function AdminShell({
   user,
   children,
@@ -63,150 +128,118 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => setOpen(false), [pathname]);
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/admin/login");
-    router.refresh();
-  }
-
-  const sidebar = (
-    /* SB Admin 2 style — brand gradient sidebar */
-    <div className="flex flex-col h-full bg-gradient-to-b from-brand-700 via-brand-800 to-brand-950 text-brand-100">
-      {/* Brand */}
-      <Link
-        href="/admin"
-        className="h-16 flex items-center justify-center gap-2.5 border-b border-white/10"
-      >
-        <Image
-          src="/logo.png"
-          alt="LapTech"
-          width={110}
-          height={36}
-          className="h-8 w-auto brightness-0 invert"
-        />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-brand-200 mt-1">
-          Admin
-        </span>
-      </Link>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
-        {nav.map((section) => (
-          <div key={section.group}>
-            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-300/80">
-              {section.group}
-            </p>
-            <ul className="space-y-0.5">
-              {section.items.map((item) => {
-                const active =
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(item.href);
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all",
-                        active
-                          ? "bg-white/15 text-white shadow-sm"
-                          : "text-brand-100/80 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <item.icon className="size-4 shrink-0" aria-hidden />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
-
-      {/* Bottom */}
-      <div className="border-t border-white/10 p-3 space-y-1">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-brand-100/80 hover:bg-white/10 hover:text-white transition-colors"
-        >
-          <Store className="size-4" aria-hidden />
-          View Store
-        </Link>
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-brand-100/80 hover:bg-white/10 hover:text-white transition-colors text-left"
-        >
-          <LogOut className="size-4" aria-hidden />
-          Sign Out
-        </button>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] dark:bg-background">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block fixed inset-y-0 left-0 w-60 z-40">
-        {sidebar}
+    <div className="app-wrapper">
+      {/* ===== Navbar ===== */}
+      <nav className="app-header navbar navbar-expand bg-body shadow-sm">
+        <div className="container-fluid">
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <button
+                className="nav-link"
+                data-lte-toggle="sidebar"
+                aria-label="Toggle sidebar"
+              >
+                <ChevronsLeft className="size-5" aria-hidden />
+              </button>
+            </li>
+            <li className="nav-item d-none d-md-block">
+              <Link href="/admin" className="nav-link">
+                Home
+              </Link>
+            </li>
+            <li className="nav-item d-none d-md-block">
+              <Link href="/" className="nav-link">
+                Store
+              </Link>
+            </li>
+          </ul>
+
+          <ul className="navbar-nav ms-auto items-center">
+            <li className="nav-item">
+              <ThemeToggle />
+            </li>
+            <li className="nav-item">
+              <NotificationBell />
+            </li>
+            <UserMenu user={user} />
+          </ul>
+        </div>
+      </nav>
+
+      {/* ===== Sidebar ===== */}
+      <aside className="app-sidebar laptech-sidebar shadow" data-bs-theme="dark">
+        <div className="sidebar-brand">
+          <Link href="/admin" className="brand-link gap-2">
+            <Image
+              src="/logo.png"
+              alt="LapTech"
+              width={110}
+              height={36}
+              className="brand-image h-7 w-auto brightness-0 invert"
+            />
+            <span className="brand-text text-[10px] font-bold uppercase tracking-widest text-brand-200">
+              Admin
+            </span>
+          </Link>
+        </div>
+
+        <div className="sidebar-wrapper">
+          <nav className="pt-2">
+            <ul
+              className="nav sidebar-menu flex-column"
+              role="navigation"
+              aria-label="Admin navigation"
+            >
+              {nav.map((section) => (
+                <Fragment key={section.group}>
+                  <li className="nav-header text-[10px] font-bold uppercase tracking-widest">
+                    {section.group}
+                  </li>
+                  {section.items.map((item) => {
+                    const active =
+                      item.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname.startsWith(item.href);
+                    return (
+                      <li key={item.href} className="nav-item">
+                        <Link
+                          href={item.href}
+                          className={cn("nav-link", active && "active")}
+                        >
+                          <item.icon
+                            className="nav-icon size-[18px]"
+                            aria-hidden
+                          />
+                          <p>{item.label}</p>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </aside>
 
-      {/* Mobile drawer */}
-      {open && (
-        <>
-          <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
-            onClick={() => setOpen(false)}
-          />
-          <aside className="lg:hidden fixed inset-y-0 left-0 w-64 z-50">
-            <button
-              className="absolute top-4 right-3 p-1.5 text-brand-200 hover:text-white z-10"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-            >
-              <X className="size-5" />
-            </button>
-            {sidebar}
-          </aside>
-        </>
-      )}
-
-      {/* Main */}
-      <div className="lg:pl-60 flex flex-col min-h-screen">
-        {/* Topbar — SB Admin 2 white bar with shadow */}
-        <header className="sticky top-0 z-30 h-16 bg-white dark:bg-card shadow-sm flex items-center gap-3 px-4 sm:px-6">
-          <button
-            className="lg:hidden p-2 -ml-1 rounded-lg hover:bg-muted"
-            onClick={() => setOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="size-5" />
-          </button>
-          <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <NotificationBell />
-            <div className="w-px h-8 bg-border mx-1 hidden sm:block" />
-            <div className="text-right hidden sm:block">
-              <p className="text-[13px] font-semibold leading-tight text-slate-700 dark:text-foreground">
-                {user.name}
-              </p>
-              <p className="text-[11px] text-muted-foreground">Administrator</p>
-            </div>
-            <div className="size-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-[13px] font-bold shadow-sm">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
+      {/* ===== Main ===== */}
+      <main className="app-main">
+        <div className="app-content">
+          <div className="container-fluid py-3 max-w-content mx-auto">
+            {children}
           </div>
-        </header>
+        </div>
+      </main>
 
-        <main className="flex-1 p-4 sm:p-6 max-w-content w-full mx-auto">
-          {children}
-        </main>
-      </div>
+      {/* ===== Footer ===== */}
+      <footer className="app-footer text-[12.5px]">
+        <div className="float-end hidden sm:block">
+          LapTech Admin Console
+        </div>
+        <strong>LapTech (Pvt) Ltd</strong> — Harare, Zimbabwe
+      </footer>
     </div>
   );
 }

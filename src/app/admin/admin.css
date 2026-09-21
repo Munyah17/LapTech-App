@@ -1,0 +1,107 @@
+/* ============================================================
+   AdminLTE 4 (Bootstrap 5.3) — LapTech brand overrides
+   Loaded only on /admin routes (imported by admin/layout.tsx).
+   ============================================================ */
+
+/* --- Brand color: LapTech blue (#2557eb / brand-600) --- */
+:root,
+[data-bs-theme="light"] {
+  --bs-primary: #2557eb;
+  --bs-primary-rgb: 37, 87, 235;
+  --bs-primary-text-emphasis: #1d45d8;
+  --bs-primary-bg-subtle: #eef4ff;
+  --bs-primary-border-subtle: #bfd3fe;
+
+  --bs-link-color: #2557eb;
+  --bs-link-color-rgb: 37, 87, 235;
+  --bs-link-hover-color: #1d45d8;
+  --bs-link-hover-color-rgb: 29, 69, 216;
+
+  /* Match the app's design tokens */
+  --bs-body-bg: rgb(248 249 252);
+  --bs-body-color: rgb(31 41 55);
+  --bs-body-font-size: 0.875rem;
+  --bs-body-font-family: var(--font-sans);
+  --bs-border-color: rgb(229 231 235);
+  --bs-tertiary-bg: rgb(248 249 252);
+  --bs-secondary-color: rgb(107 114 128);
+  --bs-emphasis-color: rgb(31 41 55);
+}
+
+[data-bs-theme="dark"] {
+  --bs-primary: #6090fa;
+  --bs-primary-rgb: 96, 144, 250;
+  --bs-primary-text-emphasis: #93b4fd;
+  --bs-primary-bg-subtle: #172554;
+  --bs-primary-border-subtle: #1e3aaf;
+
+  --bs-link-color: #6090fa;
+  --bs-link-color-rgb: 96, 144, 250;
+  --bs-link-hover-color: #93b4fd;
+  --bs-link-hover-color-rgb: 147, 180, 253;
+
+  --bs-body-bg: rgb(15 23 42);
+  --bs-body-color: rgb(226 232 240);
+  --bs-border-color: rgb(51 65 85);
+  --bs-tertiary-bg: rgb(15 23 42);
+  --bs-secondary-color: rgb(148 163 184);
+  --bs-emphasis-color: rgb(226 232 240);
+}
+
+/* Bootstrap's compiled .btn-primary uses static hex — retarget to brand */
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #1d45d8;
+  --bs-btn-hover-border-color: #1d45d8;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #1e3aaf;
+  --bs-btn-active-border-color: #1e3aaf;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--bs-primary);
+  --bs-btn-disabled-border-color: var(--bs-primary);
+}
+
+/* --- Sidebar: LapTech brand gradient (brand-700 → 800 → 950) --- */
+.app-sidebar.laptech-sidebar {
+  background-color: #1e3aaf;
+  background-image: linear-gradient(180deg, #1d45d8 0%, #1e3aaf 55%, #172554 100%);
+  --lte-sidebar-color: #dbe6fe;
+  --lte-sidebar-hover-color: #ffffff;
+  --lte-sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+  --lte-sidebar-active-color: #ffffff;
+  --lte-sidebar-menu-active-color: #ffffff;
+  --lte-sidebar-menu-active-bg: rgba(255, 255, 255, 0.16);
+  --lte-sidebar-header-color: rgba(191, 211, 254, 0.75);
+  --bs-border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   Repair layer — Bootstrap reboot ships inside adminlte.css and
+   overrides Tailwind preflight on admin pages. Re-apply the
+   preflight rules our Tailwind components rely on, scoped to the
+   admin shell and login page with zero specificity (:where) so
+   AdminLTE/Bootstrap component classes still win.
+   ============================================================ */
+:where(.app-wrapper, .login-page) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, dd, figure, blockquote, fieldset, legend, pre, hr) {
+  margin: 0;
+}
+:where(.app-wrapper, .login-page) :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+:where(.app-wrapper, .login-page) :where(a) {
+  color: inherit;
+  text-decoration: inherit;
+}
+:where(.app-wrapper, .login-page) :where(button, [type="button"], [type="submit"], [type="reset"]) {
+  cursor: pointer;
+}
+:where(.app-wrapper, .login-page) :where(button:disabled) {
+  cursor: default;
+}
+:where(.app-wrapper, .login-page) :where(b, strong) {
+  font-weight: bolder;
+}
