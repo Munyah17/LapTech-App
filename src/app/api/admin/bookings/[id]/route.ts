@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notifyBookingStatus } from "@/lib/notify";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 const validStatuses = [
   "PENDING",
@@ -31,7 +31,7 @@ export async function PATCH(
   await db.booking.update({ where: { id }, data: { status } });
   if (changed) {
     const booking = await db.booking.findUnique({ where: { id } });
-    if (booking) void notifyBookingStatus(booking).catch(console.error);
+    if (booking) after(() => notifyBookingStatus(booking).catch(console.error));
   }
   return NextResponse.json({ ok: true });
 }

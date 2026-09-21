@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { amountMatches, getPaynow, isPaidStatus } from "@/lib/paynow";
 import { notifyPaymentReceived } from "@/lib/notify";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 /**
  * Poll a transaction's status — used by the checkout page after a mobile
@@ -66,11 +66,13 @@ export async function POST(req: Request) {
           link: "/admin/orders",
         },
       });
-      const paidOrder = await db.order.findUnique({
-        where: { id: order.id },
-        include: { items: true },
+      after(async () => {
+        const paidOrder = await db.order.findUnique({
+          where: { id: order.id },
+          include: { items: true },
+        });
+        if (paidOrder) await notifyPaymentReceived(paidOrder).catch(console.error);
       });
-      if (paidOrder) void notifyPaymentReceived(paidOrder).catch(console.error);
     }
 
     return NextResponse.json({

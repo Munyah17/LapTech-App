@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notifyOrderStatus } from "@/lib/notify";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 const validStatuses = [
   "PENDING",
@@ -35,7 +35,7 @@ export async function PATCH(
       where: { id },
       include: { items: true },
     });
-    if (order) void notifyOrderStatus(order).catch(console.error);
+    if (order) after(() => notifyOrderStatus(order).catch(console.error));
   }
   return NextResponse.json({ ok: true });
 }

@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { amountMatches, getPaynow, isPaidStatus } from "@/lib/paynow";
 import { notifyPaymentReceived } from "@/lib/notify";
 import { createHash } from "crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 /**
  * Paynow posts the transaction result here (resultUrl).
@@ -121,11 +121,13 @@ export async function POST(req: Request) {
     });
 
     if (paid) {
-      const paidOrder = await db.order.findUnique({
-        where: { id: order.id },
-        include: { items: true },
+      after(async () => {
+        const paidOrder = await db.order.findUnique({
+          where: { id: order.id },
+          include: { items: true },
+        });
+        if (paidOrder) await notifyPaymentReceived(paidOrder).catch(console.error);
       });
-      if (paidOrder) void notifyPaymentReceived(paidOrder).catch(console.error);
     }
 
     return NextResponse.json({ ok: true });
