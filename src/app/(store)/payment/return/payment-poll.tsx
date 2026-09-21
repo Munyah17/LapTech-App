@@ -8,8 +8,12 @@ export function PaymentPoll({ orderId }: { orderId: string }) {
 
   useEffect(() => {
     const startedAt = Date.now();
+    let interval: number;
     const poll = async () => {
-      if (Date.now() - startedAt >= 120_000) return;
+      if (Date.now() - startedAt >= 120_000) {
+        window.clearInterval(interval);
+        return;
+      }
       try {
         const response = await fetch("/api/paynow/status", {
           method: "POST",
@@ -25,7 +29,7 @@ export function PaymentPoll({ orderId }: { orderId: string }) {
       }
     };
 
-    const interval = window.setInterval(poll, 4_000);
+    interval = window.setInterval(poll, 4_000);
     return () => window.clearInterval(interval);
   }, [orderId, router]);
 

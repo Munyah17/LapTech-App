@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatUSD } from "@/lib/utils";
 import {
@@ -407,13 +408,11 @@ export function ProductsTable({
                   </Select>
                 </Field>
               </div>
-              <Field label="Image URL">
-                <Input
-                  value={form.image}
-                  onChange={(e) => set("image", e.target.value)}
-                  placeholder="https://…"
-                />
-              </Field>
+              <ImageUpload
+                value={form.image}
+                onChange={(image) => set("image", image)}
+                hint="Upload an image or paste an existing URL."
+              />
               <Field label="Badge" hint='e.g. "New", "Sale", "Best Seller"'>
                 <Input
                   value={form.badge}

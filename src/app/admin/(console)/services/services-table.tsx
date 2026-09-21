@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [image, setImage] = useState("");
 
   const categories = [...new Set(services.map((s) => s.category))];
 
@@ -96,9 +98,13 @@ export function ServicesTable({ services }: { services: Service[] }) {
       <Field label="Description" htmlFor="description" required>
         <Textarea id="description" name="description" defaultValue={s.description} rows={2} required />
       </Field>
-      <Field label="Image URL" htmlFor="image" hint="Illustration shown on the service card">
-        <Input id="image" name="image" defaultValue={s.image ?? ""} placeholder="https://…" />
-      </Field>
+      <ImageUpload
+        value={image}
+        onChange={setImage}
+        label="Image URL"
+        hint="Illustration shown on the service card."
+      />
+      <input type="hidden" name="image" value={image} />
       <Field label="Sort Order" htmlFor="order">
         <Input id="order" name="order" type="number" defaultValue={s.order} />
       </Field>
@@ -115,7 +121,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setCreating(true); setEditing(null); }}>
+        <Button size="sm" onClick={() => { setImage(empty.image); setCreating(true); setEditing(null); }}>
           <Plus className="size-4" /> Add Service
         </Button>
       </div>
@@ -154,7 +160,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
                 <Button size="sm" variant="ghost" onClick={() => toggle(s)}>
                   {s.active ? "Hide" : "Show"}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditing(s); setCreating(false); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setImage(s.image ?? ""); setEditing(s); setCreating(false); }}>
                   <Pencil className="size-4" />
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => remove(s.id)}>

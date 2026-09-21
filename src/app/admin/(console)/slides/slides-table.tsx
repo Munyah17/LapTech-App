@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,7 @@ export function SlidesTable({ slides }: { slides: Slide[] }) {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [image, setImage] = useState("");
 
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -101,9 +103,13 @@ export function SlidesTable({ slides }: { slides: Slide[] }) {
       <Field label="Subtitle" htmlFor="subtitle">
         <Textarea id="subtitle" name="subtitle" defaultValue={s.subtitle ?? ""} rows={2} />
       </Field>
-      <Field label="Banner Image URL" htmlFor="image" required hint="Paste an image URL — displayed at 21:9, ~70% dark overlay applied automatically">
-        <Input id="image" name="image" defaultValue={s.image} required placeholder="https://…" />
-      </Field>
+      <ImageUpload
+        value={image}
+        onChange={setImage}
+        label="Banner Image URL"
+        hint="Displayed at 21:9, with a dark overlay applied automatically."
+      />
+      <input type="hidden" name="image" value={image} required />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Button 1 Label" htmlFor="ctaLabel">
           <Input id="ctaLabel" name="ctaLabel" defaultValue={s.ctaLabel} />
@@ -134,7 +140,7 @@ export function SlidesTable({ slides }: { slides: Slide[] }) {
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setCreating(true); setEditing(null); }}>
+        <Button size="sm" onClick={() => { setImage(empty.image); setCreating(true); setEditing(null); }}>
           <Plus className="size-4" /> Add Slide
         </Button>
       </div>
@@ -175,7 +181,7 @@ export function SlidesTable({ slides }: { slides: Slide[] }) {
                 <Button size="sm" variant="ghost" onClick={() => toggle(s)}>
                   {s.active ? "Hide" : "Show"}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditing(s); setCreating(false); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setImage(s.image); setEditing(s); setCreating(false); }}>
                   <Pencil className="size-4" />
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => remove(s.id)}>
