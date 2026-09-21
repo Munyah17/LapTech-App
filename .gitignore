@@ -12,3 +12,5 @@ prisma/dev.db-journal
 .env
 node_modules
 dist
+prisma/dev.db
+prisma/*.db
