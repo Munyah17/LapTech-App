@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "./admin-shell";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "Admin Console",

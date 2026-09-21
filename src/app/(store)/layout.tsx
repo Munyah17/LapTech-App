@@ -3,6 +3,8 @@ import { FloatingCart } from "@/components/storefront/floating-cart";
 import { StoreFooter } from "@/components/storefront/footer";
 import { StoreHeader } from "@/components/storefront/header";
 
+export const dynamic = "force-dynamic";
+
 export default function StoreLayout({
   children,
 }: {
