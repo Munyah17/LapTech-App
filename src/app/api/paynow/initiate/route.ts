@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Order already paid." }, { status: 400 });
     }
 
-    const paynow = getPaynow();
+    const paynow = getPaynow(order.id);
     const payment = paynow.createPayment(order.orderNumber, order.email);
     for (const item of order.items) {
       payment.add(item.name, item.price * item.qty);

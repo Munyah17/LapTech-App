@@ -1,8 +1,6 @@
 import { db } from "@/lib/db";
-import { getPaynow } from "@/lib/paynow";
+import { amountMatches, getPaynow, isPaidStatus } from "@/lib/paynow";
 import { NextResponse } from "next/server";
-
-const PAID_STATUSES = new Set(["paid", "awaiting delivery"]);
 
 /**
  * Poll a transaction's status — used by the checkout page after a mobile
@@ -29,8 +27,30 @@ export async function POST(req: Request) {
 
     const paynow = getPaynow();
     const poll = await paynow.pollTransaction(order.paymentRef);
+    const verified =
+      poll.paid === true || isPaidStatus(poll.status);
     const paid =
-      poll.paid === true || PAID_STATUSES.has(poll.status?.toLowerCase() ?? "");
+      verified &&
+      (poll.amount === undefined || amountMatches(order.total, poll.amount));
+
+    if (verified && !paid) {
+      console.warn("paynow status: amount mismatch for", order.orderNumber, {
+        expected: order.total,
+        received: poll.amount,
+      });
+      await db.notification.create({
+        data: {
+          type: "PAYMENT",
+          title: `Amount mismatch — ${order.orderNumber}`,
+          body: `${order.customerName} · Expected $${order.total.toFixed(2)}, received $${poll.amount ?? "unknown"} via Paynow`,
+          link: "/admin/orders",
+        },
+      });
+      return NextResponse.json({
+        paid: false,
+        status: order.paymentStatus,
+      });
+    }
 
     if (paid) {
       await db.order.update({

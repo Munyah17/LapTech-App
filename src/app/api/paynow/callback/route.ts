@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getPaynow } from "@/lib/paynow";
+import { amountMatches, getPaynow, isPaidStatus } from "@/lib/paynow";
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 
@@ -24,8 +24,6 @@ function verifyHash(params: [string, string][], postedHash: string): boolean {
     .toUpperCase();
   return hash === postedHash.toUpperCase();
 }
-
-const PAID_STATUSES = new Set(["paid", "awaiting delivery"]);
 
 export async function POST(req: Request) {
   try {
@@ -63,20 +61,40 @@ export async function POST(req: Request) {
     if (!order) {
       return NextResponse.json({ error: "Order not found." }, { status: 404 });
     }
+    if (order.paymentStatus === "PAID") {
+      return NextResponse.json({ ok: true });
+    }
 
     // Confirm with Paynow via poll URL when we have one
-    let verified = PAID_STATUSES.has(status ?? "");
+    let verified = isPaidStatus(status);
     if (order.paymentRef) {
       try {
-        const paynow = getPaynow();
+        const paynow = getPaynow(order.id);
         const poll = await paynow.pollTransaction(order.paymentRef);
-        verified = poll.paid === true || PAID_STATUSES.has(poll.status?.toLowerCase() ?? "");
+        verified = poll.paid === true || isPaidStatus(poll.status);
       } catch {
         // fall back to verified posted status
       }
     }
 
-    const newStatus = verified
+    const paid = verified && amountMatches(order.total, params.amount);
+    if (verified && !paid) {
+      console.warn("paynow callback: amount mismatch for", reference, {
+        expected: order.total,
+        received: params.amount,
+      });
+      await db.notification.create({
+        data: {
+          type: "PAYMENT",
+          title: `Amount mismatch — ${order.orderNumber}`,
+          body: `${order.customerName} · Expected $${order.total.toFixed(2)}, received $${params.amount ?? "unknown"} via Paynow`,
+          link: "/admin/orders",
+        },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    const newStatus = paid
       ? "PAID"
       : status === "failed" || status === "cancelled"
         ? "FAILED"
@@ -86,14 +104,14 @@ export async function POST(req: Request) {
       where: { id: order.id },
       data: {
         paymentStatus: newStatus,
-        ...(verified && { status: "CONFIRMED" }),
+        ...(paid && { status: "CONFIRMED" }),
       },
     });
 
     await db.notification.create({
       data: {
         type: "PAYMENT",
-        title: verified
+        title: paid
           ? `Payment received — ${order.orderNumber}`
           : `Payment ${status ?? "update"} — ${order.orderNumber}`,
         body: `${order.customerName} · $${order.total.toFixed(2)} via Paynow (${params.paynowreference ?? "ref n/a"})`,
