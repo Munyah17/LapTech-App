@@ -10,8 +10,10 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Package,
   Settings,
+  ShieldCheck,
   ShoppingBag,
   Store,
   Truck,
@@ -35,6 +37,13 @@ const nav = [
       { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
       { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
       { href: "/admin/customers", label: "Customers", icon: Users },
+    ],
+  },
+  {
+    group: "People",
+    items: [
+      { href: "/admin/users", label: "User Management", icon: ShieldCheck },
+      { href: "/admin/marketing", label: "Marketing", icon: Megaphone },
     ],
   },
   {

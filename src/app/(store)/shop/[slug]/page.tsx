@@ -1,12 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/storefront/product-card";
+import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatUSD } from "@/lib/utils";
 import { whatsappLink } from "@/lib/site";
 import { CheckCircle2, MessageCircle, Star, Truck, ShieldCheck } from "lucide-react";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AddToCart } from "./add-to-cart";
+import { TrackView } from "./track-view";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,6 +27,54 @@ export default async function ProductPage({ params }: Props) {
     where: { categoryId: product.categoryId, NOT: { id: product.id } },
     take: 4,
   });
+
+  // Personalized "You Might Also Like" — based on this visitor's browsing history
+  const session = await getSession();
+  const jar = await cookies();
+  const anonId = jar.get("laptech_anon")?.value;
+
+  const history = await db.interaction.findMany({
+    where: session
+      ? { userId: session.id }
+      : anonId
+        ? { sessionId: anonId }
+        : { id: "__none__" },
+    select: { categoryId: true },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+
+  // Rank categories by how often they appear in the visitor's history
+  const catCount = new Map<string, number>();
+  for (const h of history) {
+    if (h.categoryId) catCount.set(h.categoryId, (catCount.get(h.categoryId) ?? 0) + 1);
+  }
+  const topCategories = [...catCount.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)
+    .filter((id) => id !== product.categoryId)
+    .slice(0, 3);
+
+  let recommended: typeof related = [];
+  if (topCategories.length > 0) {
+    recommended = await db.product.findMany({
+      where: {
+        categoryId: { in: topCategories },
+        NOT: { id: product.id },
+        stock: { gt: 0 },
+      },
+      orderBy: { rating: "desc" },
+      take: 4,
+    });
+  }
+  // Fall back to best-rated in other categories if no history yet
+  if (recommended.length === 0) {
+    recommended = await db.product.findMany({
+      where: { NOT: { id: product.id, categoryId: product.categoryId }, stock: { gt: 0 } },
+      orderBy: [{ featured: "desc" }, { rating: "desc" }],
+      take: 4,
+    });
+  }
 
   const specs: Record<string, string> | null = product.specs
     ? JSON.parse(product.specs)
@@ -176,6 +227,20 @@ export default async function ProductPage({ params }: Props) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* You Might Also Like — personalized recommendations */}
+      {recommended.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-bold tracking-tight mb-5">
+            You Might Also Like
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recommended.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

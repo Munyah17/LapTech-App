@@ -28,6 +28,7 @@ interface CheckoutFormProps {
   zones: DeliveryZoneInfo[];
   defaultName: string;
   defaultEmail: string;
+  walletBalance: number | null;
 }
 
 const paymentMethods = [
@@ -40,7 +41,7 @@ const paymentMethods = [
 
 type Method = "PICKUP" | "DELIVERY" | "COUNTRYWIDE";
 
-export function CheckoutForm({ zones, defaultName, defaultEmail }: CheckoutFormProps) {
+export function CheckoutForm({ zones, defaultName, defaultEmail, walletBalance }: CheckoutFormProps) {
   const router = useRouter();
   const { items, clear } = useCart();
   const [mounted, setMounted] = useState(false);
@@ -525,6 +526,11 @@ export function CheckoutForm({ zones, defaultName, defaultEmail }: CheckoutFormP
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
+              {walletBalance !== null && (
+                <option value="WALLET">
+                  LapTech Wallet ({formatUSD(walletBalance)} available)
+                </option>
+              )}
               {paymentMethods.map((p) => (
                 <option key={p.value} value={p.value}>
                   {p.label}
@@ -532,6 +538,14 @@ export function CheckoutForm({ zones, defaultName, defaultEmail }: CheckoutFormP
               ))}
             </Select>
           </Field>
+
+          {paymentMethod === "WALLET" && walletBalance !== null && (
+            <p className="mt-3 text-[12.5px] rounded-lg bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800 text-brand-800 dark:text-brand-200 px-3 py-2">
+              {walletBalance >= total
+                ? `Your wallet will be charged ${formatUSD(total)} on order placement.`
+                : `Insufficient balance — your wallet has ${formatUSD(walletBalance)} but this order is ${formatUSD(total)}. Please top up or choose another method.`}
+            </p>
+          )}
 
           {/* Paynow sub-options */}
           {paymentMethod === "PAYNOW" && (

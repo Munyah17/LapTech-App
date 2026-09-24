@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getZoneForSuburb } from "@/lib/delivery";
 import { notifyOrderPlaced } from "@/lib/notify";
+import { transact } from "@/lib/wallet";
 import { after, NextResponse } from "next/server";
 
 interface OrderItemInput {
@@ -101,6 +102,28 @@ export async function POST(req: Request) {
 
     const session = await getSession();
     const orderNumber = `LT-${Date.now().toString(36).toUpperCase()}`;
+    const total = subtotal + deliveryFee;
+
+    // Wallet payment — must be logged in with sufficient balance
+    if (paymentMethod === "WALLET") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Please sign in to pay with your wallet." },
+          { status: 401 }
+        );
+      }
+      try {
+        await transact(session.id, -total, "PURCHASE", {
+          note: `Order ${orderNumber}`,
+          ref: orderNumber,
+        });
+      } catch (e) {
+        return NextResponse.json(
+          { error: e instanceof Error ? e.message : "Insufficient wallet balance." },
+          { status: 400 }
+        );
+      }
+    }
 
     const order = await db.order.create({
       data: {
@@ -111,7 +134,7 @@ export async function POST(req: Request) {
         phone: phone.trim(),
         subtotal,
         deliveryFee,
-        total: subtotal + deliveryFee,
+        total,
         deliveryMethod,
         address: address?.trim() || null,
         suburb: suburb || null,
@@ -123,8 +146,14 @@ export async function POST(req: Request) {
             | "ECOCASH"
             | "BANK_TRANSFER"
             | "IN_STORE"
-            | "PAYNOW") || "CASH_ON_DELIVERY",
-        paymentStatus: paymentMethod === "PAYNOW" ? "AWAITING" : "UNPAID",
+            | "PAYNOW"
+            | "WALLET") || "CASH_ON_DELIVERY",
+        paymentStatus:
+          paymentMethod === "WALLET"
+            ? "PAID"
+            : paymentMethod === "PAYNOW"
+              ? "AWAITING"
+              : "UNPAID",
         notes: notes?.trim() || null,
         items: { create: orderItems },
       },

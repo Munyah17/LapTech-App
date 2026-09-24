@@ -14,6 +14,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  OrdersBarChart,
+  RevenueChart,
+  StatusDonut,
+  type RevenuePoint,
+  type StatusSlice,
+} from "./dashboard-charts";
 
 /** SB Admin 2 style stat card — colored left accent, uppercase label, faded icon */
 function StatCard({
@@ -65,6 +72,9 @@ function StatCard({
 }
 
 export default async function AdminDashboard() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const [
     orderCount,
     pendingOrders,
@@ -76,6 +86,9 @@ export default async function AdminDashboard() {
     recentOrders,
     recentBookings,
     lowStock,
+    last30Orders,
+    orderStatusGroups,
+    bookingStatusGroups,
   ] = await Promise.all([
     db.order.count(),
     db.order.count({ where: { status: "PENDING" } }),
@@ -98,9 +111,44 @@ export default async function AdminDashboard() {
       orderBy: { stock: "asc" },
       take: 5,
     }),
+    // Chart data — last 30 days of orders + status breakdowns
+    db.order.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      select: { createdAt: true, total: true, status: true },
+    }),
+    db.order.groupBy({ by: ["status"], _count: { _all: true } }),
+    db.booking.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
 
   const revenue = revenueAgg._sum.total ?? 0;
+
+  // Build a continuous 30-day series (fill gaps with 0)
+  const dayKey = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const seriesMap = new Map<string, RevenuePoint>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    seriesMap.set(dayKey(d), { date: dayKey(d), revenue: 0, orders: 0 });
+  }
+  for (const o of last30Orders) {
+    const k = dayKey(new Date(o.createdAt));
+    const pt = seriesMap.get(k);
+    if (pt) {
+      pt.orders += 1;
+      if (o.status !== "CANCELLED") pt.revenue += o.total;
+    }
+  }
+  const revenueSeries = [...seriesMap.values()];
+
+  const orderStatusData: StatusSlice[] = orderStatusGroups.map((g) => ({
+    name: g.status,
+    value: g._count._all,
+  }));
+  const bookingStatusData: StatusSlice[] = bookingStatusGroups.map((g) => ({
+    name: g.status,
+    value: g._count._all,
+  }));
 
   return (
     <>
@@ -138,6 +186,20 @@ export default async function AdminDashboard() {
           accent="amber"
           hint={`${customerCount} customers · ${productCount} products`}
         />
+      </div>
+
+      {/* Charts */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2">
+          <RevenueChart data={revenueSeries} />
+        </div>
+        <StatusDonut title="Orders by Status" data={orderStatusData} />
+      </div>
+      <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2">
+          <OrdersBarChart data={revenueSeries} />
+        </div>
+        <StatusDonut title="Bookings by Status" data={bookingStatusData} />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">

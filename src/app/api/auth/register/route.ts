@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         phone: phone?.trim() || null,
         passwordHash: await bcrypt.hash(password, 10),
         role: "CLIENT",
+        wallet: { create: { balance: 0 } },
       },
     });
 

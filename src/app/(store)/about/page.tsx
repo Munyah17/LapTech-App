@@ -67,7 +67,7 @@ export default function AboutPage() {
             <p>
               {SITE.legalName} is a professional laptop solutions company based
               in the heart of Harare, Zimbabwe. From our shop at the Cyrus
-              (Ojayz) Building on Corner Mbuya Nehanda &amp; Speke Avenue, we
+              Building on Corner Mbuya Nehanda &amp; Speke Avenue, we
               serve individuals, students, professionals and businesses across
               the city.
             </p>
@@ -195,11 +195,19 @@ export default function AboutPage() {
           <br />
           {SITE.hours}
         </p>
-        <p className="text-[13.5px] mt-3">
-          <a href={`tel:${SITE.phones[0].replace(/\s/g, "")}`} className="text-brand-600 font-medium hover:underline">
-            {SITE.phones[0]}
-          </a>
-          {" · "}
+        <p className="text-[13.5px] mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          {SITE.phones.map((p, i) => (
+            <span key={p} className="inline-flex items-center gap-2">
+              {i > 0 && <span className="text-muted-foreground">·</span>}
+              <a
+                href={`tel:${p.replace(/\s/g, "")}`}
+                className="text-brand-600 font-medium hover:underline"
+              >
+                {p}
+              </a>
+            </span>
+          ))}
+          <span className="text-muted-foreground">·</span>
           <a href={`mailto:${SITE.email}`} className="text-brand-600 font-medium hover:underline">
             {SITE.email}
           </a>

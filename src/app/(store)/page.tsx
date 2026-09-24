@@ -61,60 +61,47 @@ const testimonials = [
 ];
 
 export default async function HomePage() {
-  const [slides, categories, featured, newArrivals, premium, screens, vinyl, softHard] =
-    await Promise.all([
-      db.heroSlide.findMany({
-        where: { active: true },
-        orderBy: { order: "asc" },
-      }),
-      db.category.findMany({ take: 6 }),
-      db.product.findMany({
-        where: { featured: true },
+  const [slides, categories] = await Promise.all([
+    db.heroSlide.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+    }),
+    db.category.findMany({ take: 6, orderBy: { name: "asc" } }),
+  ]);
+
+  // 4 category-based product sections (skip empty categories at render)
+  const productSections = await Promise.all(
+    categories.slice(0, 4).map(async (c) => ({
+      title: c.name,
+      slug: c.slug,
+      products: await db.product.findMany({
+        where: { categoryId: c.id },
         take: 10,
         orderBy: { createdAt: "desc" },
       }),
-      db.product.findMany({ take: 10, orderBy: { createdAt: "desc" } }),
-      db.product.findMany({
-        where: { price: { gte: 500 } },
-        take: 10,
-        orderBy: { price: "desc" },
-      }),
-      db.product.findMany({
-        where: {
-          OR: [
-            { name: { contains: "screen" } },
-            { name: { contains: "display" } },
-            { description: { contains: "screen" } },
-          ],
-        },
-        take: 10,
-      }),
-      db.product.findMany({
-        where: {
-          OR: [
-            { name: { contains: "vinyl" } },
-            { name: { contains: "wrap" } },
-            { name: { contains: "skin" } },
-          ],
-        },
-        take: 10,
-      }),
-      db.product.findMany({
-        where: {
-          category: { slug: { in: ["software", "components", "accessories"] } },
-        },
-        take: 10,
-        orderBy: { createdAt: "desc" },
-      }),
-    ]);
+    }))
+  );
 
   return (
     <>
       {/* ===== HERO SLIDER ===== */}
       <HeroSlider slides={slides} />
 
+      {/* ===== PRODUCT SECTIONS BY CATEGORY (right under hero) ===== */}
+      {productSections.map((sec, i) =>
+        sec.products.length === 0 ? null : (
+          <div key={sec.slug} className={i % 2 === 0 ? "bg-muted-soft" : ""}>
+            <ProductCarousel
+              title={sec.title}
+              seeAllHref={`/shop?category=${sec.slug}`}
+              products={sec.products}
+            />
+          </div>
+        )
+      )}
+
       {/* ===== FEATURES STRIP ===== */}
-      <section className="max-w-content mx-auto px-4 -mt-8 relative z-10">
+      <section className="max-w-content mx-auto px-4 py-14">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {features.map((f) => (
             <div
@@ -135,8 +122,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== CORE SERVICES — 4×2, directly under hero ===== */}
-      <section className="max-w-content mx-auto px-4 py-14">
+      {/* ===== CORE SERVICES ===== */}
+      <section className="max-w-content mx-auto px-4 pb-14">
         <div className="text-center mb-8">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             Our Core Services
@@ -170,7 +157,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== CATEGORIES ===== */}
-      <section className="max-w-content mx-auto px-4 py-14">
+      <section className="max-w-content mx-auto px-4 pb-14">
         <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
@@ -202,50 +189,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ===== PRODUCT CAROUSELS BY CATEGORY ===== */}
-      <div className="bg-muted-soft">
-        <ProductCarousel
-          title="Featured Products"
-          subtitle="Top-selling laptops, accessories and software"
-          seeAllHref="/shop"
-          products={featured}
-        />
-      </div>
-      <ProductCarousel
-        title="New Arrivals"
-        subtitle="Fresh stock, just landed"
-        seeAllHref="/shop?sort=newest"
-        products={newArrivals}
-      />
-      <div className="bg-muted-soft">
-        <ProductCarousel
-          title="Premium Products"
-          subtitle="High-end machines for professionals"
-          seeAllHref="/shop?sort=price-desc"
-          products={premium}
-        />
-      </div>
-      <ProductCarousel
-        title="Screen Replacements"
-        subtitle="Displays and panels for all major brands"
-        seeAllHref="/shop?q=screen"
-        products={screens}
-      />
-      <div className="bg-muted-soft">
-        <ProductCarousel
-          title="Vinyl Wrapping"
-          subtitle="Custom wraps, skins and decals"
-          seeAllHref="/shop?q=vinyl"
-          products={vinyl}
-        />
-      </div>
-      <ProductCarousel
-        title="Software & Hardware"
-        subtitle="Licenses, upgrades and components"
-        seeAllHref="/shop?category=software"
-        products={softHard}
-      />
 
       {/* ===== TESTIMONIALS ===== */}
       <section className="bg-muted-soft py-14">

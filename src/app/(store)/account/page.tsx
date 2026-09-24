@@ -4,10 +4,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatUSD } from "@/lib/utils";
+import { getOrCreateWallet } from "@/lib/wallet";
 import { Package, ShoppingBag, Wrench } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "./logout-button";
+import { WalletCard } from "./wallet-card";
 
 export const metadata: Metadata = {
   title: "My Account",
@@ -18,7 +20,7 @@ export default async function AccountPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const [orders, bookings] = await Promise.all([
+  const [orders, bookings, wallet] = await Promise.all([
     db.order.findMany({
       where: { OR: [{ userId: session.id }, { email: session.email }] },
       include: { items: true },
@@ -28,7 +30,13 @@ export default async function AccountPage() {
       where: { OR: [{ userId: session.id }, { email: session.email }] },
       orderBy: { createdAt: "desc" },
     }),
+    getOrCreateWallet(session.id),
   ]);
+  const transactions = await db.walletTransaction.findMany({
+    where: { walletId: wallet.id },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
   return (
     <div className="max-w-content mx-auto px-4 py-8">
@@ -43,6 +51,9 @@ export default async function AccountPage() {
         </div>
         <LogoutButton />
       </div>
+
+      {/* Wallet */}
+      <WalletCard balance={wallet.balance} transactions={transactions} />
 
       {/* Orders */}
       <Card className="mb-6">

@@ -12,6 +12,7 @@ interface AddToCartProps {
     name: string;
     price: number;
     image: string | null;
+    categoryId?: string;
   };
   disabled?: boolean;
 }
@@ -24,6 +25,16 @@ export function AddToCart({ product, disabled }: AddToCartProps) {
   const handleAdd = () => {
     add(product, qty);
     setAdded(true);
+    // Track cart-add for recommendations (fire-and-forget)
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "CART_ADD",
+        productId: product.productId,
+        categoryId: product.categoryId,
+      }),
+    }).catch(() => {});
   };
 
   if (added) {

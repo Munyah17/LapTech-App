@@ -83,7 +83,7 @@ export function ProductCarousel({
           <div
             key={p.id}
             data-card
-            className="snap-center shrink-0 w-[62vw] sm:w-[31%] lg:w-[23.5%]"
+            className="snap-center shrink-0 w-[80vw] sm:w-[31%] lg:w-[23.5%]"
           >
             <ProductCard product={p} />
           </div>

@@ -10,7 +10,7 @@ export const SITE = {
   phones: ["+263 773 909 307", "+263 71 782 1904", "+263 782 800 961"],
   whatsapp: "263773909307",
   address: {
-    line1: "Shop C3, 2nd Floor, Cyrus (Ojayz) Building",
+    line1: "Shop C3, 2nd Floor, Cyrus Building",
     line2: "Corner Mbuya Nehanda & Speke Avenue",
     city: "Harare, Zimbabwe",
   },
