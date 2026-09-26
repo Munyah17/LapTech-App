@@ -2,6 +2,7 @@ import { BottomTabBar } from "@/components/storefront/bottom-tab-bar";
 import { FloatingCart } from "@/components/storefront/floating-cart";
 import { StoreFooter } from "@/components/storefront/footer";
 import { StoreHeader } from "@/components/storefront/header";
+import { PageTracker } from "@/components/storefront/page-tracker";
 import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function StoreLayout({
       <StoreFooter />
       <FloatingCart />
       <BottomTabBar />
+      <PageTracker />
     </div>
   );
 }

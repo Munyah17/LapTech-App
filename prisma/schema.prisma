@@ -272,3 +272,20 @@ model Interaction {
   @@index([sessionId])
   @@index([categoryId])
 }
+
+// Visitor analytics — one row per page view on the storefront.
+// Plain log table; unique visitors counted via sessionId (anon) or userId.
+model PageView {
+  id        String   @id @default(cuid())
+  path      String // e.g. "/", "/shop", "/shop/some-slug"
+  sessionId String? // anonymous visitor id (laptech_anon cookie)
+  userId    String? // logged-in visitor
+  referrer  String? // document.referrer / traffic source
+  userAgent String? // for device breakdown
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([path])
+  @@index([createdAt])
+}

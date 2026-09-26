@@ -4,6 +4,7 @@ import type { SessionUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import {
+  BarChart3,
   Bike,
   CalendarCheck,
   ChevronsLeft,
@@ -29,7 +30,10 @@ import { NotificationBell } from "./notification-bell";
 const nav = [
   {
     group: "Overview",
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    ],
   },
   {
     group: "Sales",

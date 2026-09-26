@@ -21,6 +21,15 @@ export function formatDate(date: Date | string): string {
   });
 }
 
+export function formatDateTime(date: Date | string): string {
+  return new Date(date).toLocaleString("en-ZW", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

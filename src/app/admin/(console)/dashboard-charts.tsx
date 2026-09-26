@@ -28,6 +28,12 @@ export interface StatusSlice {
   value: number;
 }
 
+export interface VisitorPoint {
+  date: string; // e.g. "Sep 10"
+  views: number;
+  visitors: number;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "#f59e0b",
   CONFIRMED: "#2557eb",
@@ -125,6 +131,73 @@ export function OrdersBarChart({ data }: { data: RevenuePoint[] }) {
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} />
               <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={22} />
             </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function VisitorsChart({ data }: { data: VisitorPoint[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Visitors — Last 30 Days</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="vis" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="pv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                minTickGap={28}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Legend
+                iconSize={9}
+                iconType="circle"
+                formatter={(v: string) => (
+                  <span style={{ fontSize: 11.5, color: "var(--muted-foreground)" }}>{v}</span>
+                )}
+              />
+              <Area
+                type="monotone"
+                dataKey="visitors"
+                name="Unique visitors"
+                stroke="#8b5cf6"
+                strokeWidth={2.5}
+                fill="url(#vis)"
+              />
+              <Area
+                type="monotone"
+                dataKey="views"
+                name="Page views"
+                stroke="#06b6d4"
+                strokeWidth={2}
+                fill="url(#pv)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

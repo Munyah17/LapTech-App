@@ -87,21 +87,8 @@ export default async function HomePage() {
       {/* ===== HERO SLIDER ===== */}
       <HeroSlider slides={slides} />
 
-      {/* ===== PRODUCT SECTIONS BY CATEGORY (right under hero) ===== */}
-      {productSections.map((sec, i) =>
-        sec.products.length === 0 ? null : (
-          <div key={sec.slug} className={i % 2 === 0 ? "bg-muted-soft" : ""}>
-            <ProductCarousel
-              title={sec.title}
-              seeAllHref={`/shop?category=${sec.slug}`}
-              products={sec.products}
-            />
-          </div>
-        )
-      )}
-
       {/* ===== FEATURES STRIP ===== */}
-      <section className="max-w-content mx-auto px-4 py-14">
+      <section className="max-w-content mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {features.map((f) => (
             <div
@@ -122,42 +109,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== CORE SERVICES ===== */}
-      <section className="max-w-content mx-auto px-4 pb-14">
-        <div className="text-center mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Our Core Services
-          </h2>
-          <p className="text-[13px] text-muted-foreground mt-1 max-w-lg mx-auto">
-            Comprehensive solutions tailored to your laptop needs with quality
-            and precision.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {services.map((s) => (
-            <div
-              key={s.title}
-              className="bg-card rounded-xl border p-5 hover:border-brand-300 transition-colors h-full"
-            >
-              <div className="size-10 rounded-lg bg-brand-100 dark:bg-brand-900 flex items-center justify-center mb-3">
-                <s.icon className="size-5 text-brand-600 dark:text-brand-300" aria-hidden />
-              </div>
-              <h3 className="text-[14px] font-semibold">{s.title}</h3>
-              <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">
-                {s.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="text-center mt-8">
-          <ButtonLink href="/services" variant="secondary">
-            View All Services
-          </ButtonLink>
-        </div>
-      </section>
-
       {/* ===== CATEGORIES ===== */}
-      <section className="max-w-content mx-auto px-4 pb-14">
+      <section className="max-w-content mx-auto px-4 py-14">
         <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
@@ -187,6 +140,53 @@ export default async function HomePage() {
               <span className="text-[13px] font-medium">{c.name}</span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* ===== PRODUCT SECTIONS BY CATEGORY ===== */}
+      {productSections.map((sec, i) =>
+        sec.products.length === 0 ? null : (
+          <div key={sec.slug} className={i % 2 === 0 ? "bg-muted-soft" : ""}>
+            <ProductCarousel
+              title={sec.title}
+              seeAllHref={`/shop?category=${sec.slug}`}
+              products={sec.products}
+            />
+          </div>
+        )
+      )}
+
+      {/* ===== CORE SERVICES — after last product section ===== */}
+      <section className="max-w-content mx-auto px-4 py-14">
+        <div className="text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Our Core Services
+          </h2>
+          <p className="text-[13px] text-muted-foreground mt-1 max-w-lg mx-auto">
+            Comprehensive solutions tailored to your laptop needs with quality
+            and precision.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {services.map((s) => (
+            <div
+              key={s.title}
+              className="bg-card rounded-xl border p-5 hover:border-brand-300 transition-colors h-full"
+            >
+              <div className="size-10 rounded-lg bg-brand-100 dark:bg-brand-900 flex items-center justify-center mb-3">
+                <s.icon className="size-5 text-brand-600 dark:text-brand-300" aria-hidden />
+              </div>
+              <h3 className="text-[14px] font-semibold">{s.title}</h3>
+              <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">
+                {s.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <ButtonLink href="/services" variant="secondary">
+            View All Services
+          </ButtonLink>
         </div>
       </section>
 
