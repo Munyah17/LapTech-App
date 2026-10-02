@@ -1,7 +1,8 @@
 import { createSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyUserRegistered } from "@/lib/notify";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -48,7 +49,15 @@ export async function POST(req: Request) {
       email: user.email,
       role: user.role,
     });
+after(() =>
+      notifyUserRegistered({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      }).catch(console.error)
+    );
 
+    
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("register error", e);

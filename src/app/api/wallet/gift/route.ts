@@ -1,6 +1,8 @@
 import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { notifyWalletGift } from "@/lib/notify";
 import { gift } from "@/lib/wallet";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 // Gift wallet balance to another user by email
 export async function POST(req: Request) {
@@ -27,6 +29,22 @@ export async function POST(req: Request) {
 
   try {
     await gift(session.id, toEmail, amount, note);
+    const recipient = await db.user.findUnique({
+      where: { email: toEmail.trim().toLowerCase() },
+      select: { name: true, email: true },
+    });
+    if (recipient) {
+      after(() =>
+        notifyWalletGift({
+          fromName: session.name,
+          fromEmail: session.email,
+          toName: recipient.name,
+          toEmail: recipient.email,
+          amount,
+          note,
+        }).catch(console.error)
+      );
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

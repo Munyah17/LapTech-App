@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyWalletAdjusted } from "@/lib/notify";
 import { adminCredit, getOrCreateWallet } from "@/lib/wallet";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 // Get a user's wallet + recent transactions
 export async function GET(
@@ -42,6 +43,21 @@ export async function POST(
   }
 
   try {
+    const user = await db.user.findUnique({
+      where: { id },
+      select: { name: true, email: true },
+    });
+    if (user) {
+      after(() =>
+        notifyWalletAdjusted({
+          userName: user.name,
+          userEmail: user.email,
+          amount,
+          balance: wallet.balance,
+          note,
+        }).catch(console.error)
+      );
+    }
     const wallet = await adminCredit(id, amount, note);
     return NextResponse.json({ ok: true, balance: wallet.balance });
   } catch (e) {

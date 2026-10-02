@@ -151,3 +151,53 @@ export function bookingStatusEmail(booking: EmailBooking): EmailContent {
     ...layout(`Booking update`, `<p>Hi ${escapeHtml(booking.name)},</p><p>${escapeHtml(message)}</p><p>Status: <strong>${escapeHtml(displayValue(booking.status))}</strong></p>`, text),
   };
 }
+
+export function orderStatusAdminEmail(order: EmailOrder): EmailContent {
+  const text = `Order ${order.orderNumber} status changed to ${displayValue(order.status)}.\nCustomer: ${order.customerName} (${order.email})`;
+  return {
+    subject: `Order ${order.orderNumber} — ${displayValue(order.status)}`,
+    ...layout(`Order ${order.orderNumber} status update`, `<p>Order <strong>${escapeHtml(order.orderNumber)}</strong> for ${escapeHtml(order.customerName)} (${escapeHtml(order.email)}) is now <strong>${escapeHtml(displayValue(order.status))}</strong>.</p>`, text),
+  };
+}
+
+export function bookingStatusAdminEmail(booking: EmailBooking): EmailContent {
+  const text = `${booking.serviceType} booking for ${booking.name} is now ${displayValue(booking.status)}.`;
+  return {
+    subject: `Booking update — ${displayValue(booking.status)}`,
+    ...layout(`Booking status update`, `<p>The ${escapeHtml(booking.serviceType)} booking for <strong>${escapeHtml(booking.name)}</strong> is now <strong>${escapeHtml(displayValue(booking.status))}</strong>.</p><p>Phone: ${escapeHtml(booking.phone)}<br/>Email: ${escapeHtml(booking.email ?? "not provided")}</p>`, text),
+  };
+}
+
+/** Generic staff-facing notice — every actionable event lands in the shared team inbox. */
+export function staffNoticeEmail(
+  subject: string,
+  title: string,
+  details: string[]
+): EmailContent {
+  const rows = details
+    .filter(Boolean)
+    .map((line) => `<p style="margin:4px 0">${escapeHtml(line)}</p>`)
+    .join("");
+  return {
+    subject,
+    ...layout(title, rows, `${title}\n\n${details.filter(Boolean).join("\n")}`),
+  };
+}
+
+/** Customer-facing wallet gift received email. */
+export function walletGiftReceivedEmail(opts: {
+  toName: string;
+  fromName: string;
+  amount: number;
+  note?: string;
+}): EmailContent {
+  const text = `Hi ${opts.toName},\n\n${opts.fromName} sent you ${formatUSD(opts.amount)} in wallet credit.${opts.note ? `\nNote: ${opts.note}` : ""}\n\nYou can use it at checkout on your next order.`;
+  return {
+    subject: `You received ${formatUSD(opts.amount)} wallet credit`,
+    ...layout(
+      `You received ${formatUSD(opts.amount)}`,
+      `<p>Hi ${escapeHtml(opts.toName)},</p><p><strong>${escapeHtml(opts.fromName)}</strong> sent you <strong>${formatUSD(opts.amount)}</strong> in wallet credit.${opts.note ? `</p><p>Note: ${escapeHtml(opts.note)}</p><p>` : "</p><p>"}Use it at checkout on your next order.</p>`,
+      text
+    ),
+  };
+}

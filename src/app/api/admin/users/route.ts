@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyUserCreatedByAdmin } from "@/lib/notify";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 // List all users (admins + clients) with wallet balance
 export async function GET() {
@@ -72,6 +73,14 @@ export async function POST(req: Request) {
     },
     select: { id: true, name: true, email: true, role: true },
   });
+after(() =>
+    notifyUserCreatedByAdmin({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }).catch(console.error)
+  );
 
+  
   return NextResponse.json(user, { status: 201 });
 }

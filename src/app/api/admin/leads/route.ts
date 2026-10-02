@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { notifyLeadCreated } from "@/lib/notify";
+import { after, NextResponse } from "next/server";
 
 // List all marketing leads
 export async function GET() {
@@ -34,5 +35,6 @@ export async function POST(req: Request) {
       interests: b.interests?.trim() || null,
     },
   });
+  after(() => notifyLeadCreated(lead).catch(console.error));
   return NextResponse.json(lead, { status: 201 });
 }
