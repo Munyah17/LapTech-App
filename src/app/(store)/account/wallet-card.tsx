@@ -66,8 +66,9 @@ export function WalletCard({
   }
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-5 rounded-2xl">
       <CardHeader
+        className="px-4 sm:px-5 pt-4 pb-2.5"
         action={
           <Button size="sm" variant="secondary" onClick={() => setGifting((g) => !g)}>
             <Gift className="size-4" /> Gift
@@ -79,14 +80,13 @@ export function WalletCard({
           My Wallet
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-baseline gap-2 mb-1">
-          <span className="text-3xl font-bold tnum">{formatUSD(balance)}</span>
-          <span className="text-[12.5px] text-muted-foreground">available balance</span>
+      <CardContent className="px-4 sm:px-5 pb-4">
+        <div className="flex items-baseline gap-2 mb-1.5">
+          <span className="text-xl sm:text-2xl font-semibold tnum">{formatUSD(balance)}</span>
+          <span className="text-[11.5px] text-muted-foreground">available</span>
         </div>
-        <p className="text-[12px] text-muted-foreground mb-4">
-          Use your balance at checkout or gift it to another LapTech account. Wallet
-          funds cannot be withdrawn.
+        <p className="text-[11.5px] text-muted-foreground mb-3">
+          Use at checkout or gift to another LapTech account. Funds cannot be withdrawn.
         </p>
 
         {gifting && (
