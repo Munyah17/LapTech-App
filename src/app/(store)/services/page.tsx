@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { db } from "@/lib/db";
+import { getActiveServices } from "@/lib/catalog";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { BookingForm } from "./booking-form";
@@ -18,11 +18,10 @@ const steps = [
   { n: 5, title: "Delivery", desc: "Returned with warranty and ongoing support." },
 ];
 
+export const revalidate = 60;
+
 export default async function ServicesPage() {
-  const services = await db.service.findMany({
-    where: { active: true },
-    orderBy: { order: "asc" },
-  });
+  const services = await getActiveServices();
 
   // Group by category, preserving order
   const categories = services.reduce<

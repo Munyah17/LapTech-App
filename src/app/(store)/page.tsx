@@ -2,7 +2,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { HeroSlider } from "@/components/storefront/hero-slider";
 import { ProductCarousel } from "@/components/storefront/product-carousel";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
-import { db } from "@/lib/db";
+import { getCategories, getCategoryProducts, getHeroSlides } from "@/lib/catalog";
 import { SITE, whatsappLink } from "@/lib/site";
 import {
   ArrowRight,
@@ -60,13 +60,13 @@ const testimonials = [
   },
 ];
 
+// ISR: prerendered HTML cached at the edge; catalog data revalidated every minute.
+export const revalidate = 60;
+
 export default async function HomePage() {
   const [slides, categories] = await Promise.all([
-    db.heroSlide.findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-    }),
-    db.category.findMany({ take: 6, orderBy: { name: "asc" } }),
+    getHeroSlides(),
+    getCategories(6),
   ]);
 
   // 4 category-based product sections (skip empty categories at render)
@@ -74,11 +74,7 @@ export default async function HomePage() {
     categories.slice(0, 4).map(async (c) => ({
       title: c.name,
       slug: c.slug,
-      products: await db.product.findMany({
-        where: { categoryId: c.id },
-        take: 10,
-        orderBy: { createdAt: "desc" },
-      }),
+      products: await getCategoryProducts(c.id, 10),
     }))
   );
 

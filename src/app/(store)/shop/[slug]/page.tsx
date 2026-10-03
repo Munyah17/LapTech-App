@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/storefront/product-card";
 import { getSession } from "@/lib/auth";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog";
 import { db } from "@/lib/db";
 import { formatUSD } from "@/lib/utils";
 import { whatsappLink } from "@/lib/site";
@@ -17,16 +18,10 @@ interface Props {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = await db.product.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = await db.product.findMany({
-    where: { categoryId: product.categoryId, NOT: { id: product.id } },
-    take: 4,
-  });
+  const related = await getRelatedProducts(product.categoryId, product.id);
 
   // Personalized "You Might Also Like" — based on this visitor's browsing history
   const session = await getSession();

@@ -4,6 +4,7 @@ import type { SessionUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import {
+  ArrowLeft,
   BarChart3,
   Bike,
   CalendarCheck,
@@ -133,6 +134,52 @@ function UserMenu({ user }: { user: SessionUser }) {
   );
 }
 
+function SidebarUserPanel({ user }: { user: SessionUser }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  async function logout() {
+    setBusy(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  }
+
+  return (
+    <div className="px-3 pt-3 pb-4 border-t border-white/10 mt-2">
+      <div className="flex items-center gap-3">
+        {/* Avatar slot — initials fallback until a photo exists on the account */}
+        <span className="size-10 shrink-0 rounded-full bg-brand-600 text-white flex items-center justify-center text-[15px] font-bold ring-2 ring-white/20">
+          {user.name.charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13.5px] font-semibold text-white truncate">
+            {user.name}
+          </p>
+          <p className="text-[11px] text-white/50 truncate">{user.email}</p>
+        </div>
+      </div>
+      <div className="mt-2.5 flex gap-1.5">
+        <Link
+          href="/admin/settings"
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-white/5 px-2 py-1.5 text-[11.5px] font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+        >
+          <Settings className="size-3.5" aria-hidden />
+          Settings
+        </Link>
+        <button
+          onClick={logout}
+          disabled={busy}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-white/5 px-2 py-1.5 text-[11.5px] font-medium text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors disabled:opacity-50"
+        >
+          <LogOut className="size-3.5" aria-hidden />
+          {busy ? "…" : "Logout"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function AdminShell({
   user,
   children,
@@ -234,6 +281,20 @@ export function AdminShell({
               ))}
             </ul>
           </nav>
+
+          {/* Back to storefront — session stays logged in */}
+          <div className="px-3 pt-3 pb-4 border-t border-white/10 mt-2">
+            <Link
+              href="/"
+              className="nav-link flex items-center gap-2 rounded-lg text-brand-200 hover:text-white"
+            >
+              <ArrowLeft className="nav-icon size-[18px]" aria-hidden />
+              <p className="font-medium">Back to Website</p>
+            </Link>
+          </div>
+
+          {/* User panel — avatar, name, email, settings, logout */}
+          <SidebarUserPanel user={user} />
         </div>
       </aside>
 

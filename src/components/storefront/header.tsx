@@ -1,6 +1,5 @@
 "use client";
 
-import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Menu, X } from "lucide-react";
@@ -18,7 +17,7 @@ const nav = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function StoreHeader({ user }: { user: SessionUser | null }) {
+export function StoreHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -72,7 +71,7 @@ export function StoreHeader({ user }: { user: SessionUser | null }) {
           <span className="hidden lg:block">
             <ThemeToggle />
           </span>
-          <HeaderAuth user={user} />
+          <HeaderAuth />
         </div>
       </div>
 

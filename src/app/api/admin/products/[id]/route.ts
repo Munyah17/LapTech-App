@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -37,7 +38,7 @@ export async function PATCH(
       ...(featured !== undefined && { featured: Boolean(featured) }),
     },
   });
-
+  revalidateTag("catalog");
   return NextResponse.json({ ok: true });
 }
 

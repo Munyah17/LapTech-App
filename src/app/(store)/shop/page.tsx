@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { getCategories, getShopProducts } from "@/lib/catalog";
 import { ShopCatalog } from "./shop-catalog";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -9,13 +9,12 @@ export const metadata: Metadata = {
     "Browse laptops, accessories, software and gadgets at LapTech Harare.",
 };
 
+export const revalidate = 60;
+
 export default async function ShopPage() {
   const [products, categories] = await Promise.all([
-    db.product.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { category: { select: { name: true, slug: true } } },
-    }),
-    db.category.findMany({ orderBy: { name: "asc" } }),
+    getShopProducts(),
+    getCategories(),
   ]);
 
   return (

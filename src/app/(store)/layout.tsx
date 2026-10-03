@@ -3,20 +3,19 @@ import { FloatingCart } from "@/components/storefront/floating-cart";
 import { StoreFooter } from "@/components/storefront/footer";
 import { StoreHeader } from "@/components/storefront/header";
 import { PageTracker } from "@/components/storefront/page-tracker";
-import { getSession } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
+// No force-dynamic here — the header fetches the session client-side via
+// /api/auth/me, so public pages can be statically cached (ISR) on Vercel's
+// edge network. Pages that need the session read cookies themselves.
 
-export default async function StoreLayout({
+export default function StoreLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-
   return (
     <div className="min-h-screen flex flex-col">
-      <StoreHeader user={session} />
+      <StoreHeader />
       <main className="flex-1 pt-16 pb-24 lg:pb-0">{children}</main>
       <StoreFooter />
       <FloatingCart />

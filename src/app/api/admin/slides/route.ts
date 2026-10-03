@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -26,5 +27,6 @@ export async function POST(req: Request) {
       order: Number(b.order) || 0,
     },
   });
+  revalidateTag("catalog");
   return NextResponse.json(slide);
 }

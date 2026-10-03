@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidateTag("catalog");
     return NextResponse.json({ ok: true, id: product.id });
   } catch (e) {
     console.error("create product error", e);

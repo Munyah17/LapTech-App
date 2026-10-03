@@ -26,14 +26,33 @@ function initials(name: string) {
 
 /**
  * Right-side auth control for the storefront header.
- * Logged out  → "Login / Sign Up" button.
- * Logged in   → avatar with dropdown (Notifications, My Profile, Settings, Logout).
+ * Fetches the session client-side via /api/auth/me so public pages can be
+ * statically cached. Logged out → "Login / Sign Up" button.
+ * Logged in → avatar with dropdown (Notifications, My Profile, Settings, Logout).
  */
-export function HeaderAuth({ user }: { user: SessionUser | null }) {
+export function HeaderAuth() {
   const router = useRouter();
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setUser(d.user ?? null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -56,12 +75,18 @@ export function HeaderAuth({ user }: { user: SessionUser | null }) {
     setBusy(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
       setOpen(false);
       router.refresh();
       router.push("/");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!loaded) {
+    // Neutral placeholder while session resolves — avoids a Login flash.
+    return <span className="size-9 rounded-full bg-muted animate-pulse" />;
   }
 
   if (!user) {

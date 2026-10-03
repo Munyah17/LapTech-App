@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -26,6 +27,7 @@ export async function PATCH(
       ...(b.active !== undefined && { active: Boolean(b.active) }),
     },
   });
+  revalidateTag("catalog");
   return NextResponse.json({ ok: true });
 }
 
@@ -37,5 +39,6 @@ export async function DELETE(
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   await db.heroSlide.delete({ where: { id } });
+  revalidateTag("catalog");
   return NextResponse.json({ ok: true });
 }
