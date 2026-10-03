@@ -5,7 +5,7 @@
   "description": "LapTech (Pvt) Ltd — online shop for laptops, software and IT services in Harare, Zimbabwe.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma db push --skip-generate && next build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",

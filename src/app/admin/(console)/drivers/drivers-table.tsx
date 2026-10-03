@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
-import { Bike, Pencil, Phone, Plus, Trash2, X } from "lucide-react";
+import { Bike, Car, Pencil, Phone, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -12,13 +12,21 @@ interface Driver {
   id: string;
   name: string;
   phone: string;
+  kind: "BIKER" | "DRIVER";
   vehicle: string;
   zones: string | null;
   notes: string | null;
   active: boolean;
 }
 
-const empty = { name: "", phone: "", vehicle: "", zones: "", notes: "" };
+const empty = {
+  name: "",
+  phone: "",
+  kind: "BIKER" as const,
+  vehicle: "",
+  zones: "",
+  notes: "",
+};
 
 export function DriversTable({ drivers }: { drivers: Driver[] }) {
   const router = useRouter();
@@ -35,6 +43,7 @@ export function DriversTable({ drivers }: { drivers: Driver[] }) {
     const body = {
       name: f.get("name"),
       phone: f.get("phone"),
+      kind: f.get("kind"),
       vehicle: f.get("vehicle"),
       zones: f.get("zones") || null,
       notes: f.get("notes") || null,
@@ -79,12 +88,24 @@ export function DriversTable({ drivers }: { drivers: Driver[] }) {
 
   const form = (d: typeof empty | Driver) => (
     <form onSubmit={save} className="space-y-3">
-      <div className="grid sm:grid-cols-3 gap-3">
+      <div className="grid sm:grid-cols-4 gap-3">
         <Field label="Name" htmlFor="name" required>
           <Input id="name" name="name" defaultValue={d.name} required />
         </Field>
         <Field label="Phone" htmlFor="phone" required>
           <Input id="phone" name="phone" defaultValue={d.phone} required placeholder="+263…" />
+        </Field>
+        <Field label="Type" htmlFor="kind" required>
+          <select
+            id="kind"
+            name="kind"
+            defaultValue={d.kind}
+            required
+            className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-[13.5px] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="BIKER">Biker (Motorbike)</option>
+            <option value="DRIVER">Driver (Car / Van)</option>
+          </select>
         </Field>
         <Field label="Vehicle" htmlFor="vehicle" required hint='e.g. "Motorbike" or "Sedan — InDrive"'>
           <Input id="vehicle" name="vehicle" defaultValue={d.vehicle} required />
@@ -128,12 +149,19 @@ export function DriversTable({ drivers }: { drivers: Driver[] }) {
           ) : (
             <div className="flex gap-4 items-start">
               <div className="size-10 rounded-lg bg-brand-100 dark:bg-brand-900 flex items-center justify-center shrink-0">
-                <Bike className="size-5 text-brand-600 dark:text-brand-300" aria-hidden />
+                {d.kind === "BIKER" ? (
+                  <Bike className="size-5 text-brand-600 dark:text-brand-300" aria-hidden />
+                ) : (
+                  <Car className="size-5 text-brand-600 dark:text-brand-300" aria-hidden />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-[14px] font-semibold">{d.name}</h3>
-                  <Badge tone="brand">{d.vehicle}</Badge>
+                  <Badge tone={d.kind === "BIKER" ? "brand" : "info"}>
+                    {d.kind === "BIKER" ? "Biker" : "Driver"}
+                  </Badge>
+                  <Badge tone="neutral">{d.vehicle}</Badge>
                   <Badge tone={d.active ? "success" : "neutral"}>
                     {d.active ? "Active" : "Inactive"}
                   </Badge>

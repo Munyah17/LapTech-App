@@ -17,6 +17,9 @@ export async function PATCH(
     data: {
       ...(b.name !== undefined && { name: b.name.trim() }),
       ...(b.phone !== undefined && { phone: b.phone.trim() }),
+      ...(b.kind !== undefined && {
+        kind: b.kind === "BIKER" ? "BIKER" : "DRIVER",
+      }),
       ...(b.vehicle !== undefined && { vehicle: b.vehicle.trim() }),
       ...(b.zones !== undefined && { zones: b.zones?.trim() || null }),
       ...(b.notes !== undefined && { notes: b.notes?.trim() || null }),

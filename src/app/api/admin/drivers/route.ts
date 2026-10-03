@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     data: {
       name: b.name.trim(),
       phone: b.phone.trim(),
+      kind: b.kind === "BIKER" ? "BIKER" : "DRIVER",
       vehicle: b.vehicle.trim(),
       zones: b.zones?.trim() || null,
       notes: b.notes?.trim() || null,

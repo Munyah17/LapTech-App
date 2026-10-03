@@ -61,6 +61,11 @@ enum BookingStatus {
   CANCELLED    
 }    
 
+enum DriverKind {
+  BIKER   // motorbike courier
+  DRIVER  // car/van driver (e.g. InDrive partner)
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -192,9 +197,10 @@ model Service {
 }
 
 model Driver {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
   phone     String
+  kind      DriverKind @default(DRIVER)
   vehicle   String // e.g. "Motorbike", "Sedan — InDrive"
   zones     String? // comma-separated zones they cover
   notes     String?
