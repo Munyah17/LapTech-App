@@ -2,7 +2,8 @@
 
 import { Button, ButtonLink } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-store";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface AddToCartProps {
@@ -19,13 +20,12 @@ interface AddToCartProps {
 
 export function AddToCart({ product, disabled }: AddToCartProps) {
   const add = useCart((s) => s.add);
+  const router = useRouter();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
-  const handleAdd = () => {
-    add(product, qty);
-    setAdded(true);
-    // Track cart-add for recommendations (fire-and-forget)
+  // Track cart-add for recommendations (fire-and-forget)
+  const trackAdd = () =>
     fetch("/api/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,6 +35,17 @@ export function AddToCart({ product, disabled }: AddToCartProps) {
         categoryId: product.categoryId,
       }),
     }).catch(() => {});
+
+  const handleAdd = () => {
+    add(product, qty);
+    setAdded(true);
+    trackAdd();
+  };
+
+  const buyNow = () => {
+    add(product, qty);
+    trackAdd();
+    router.push("/checkout");
   };
 
   if (added) {
@@ -56,7 +67,7 @@ export function AddToCart({ product, disabled }: AddToCartProps) {
   }
 
   return (
-    <div className="flex gap-3 flex-1">
+    <div className="flex gap-3 flex-1 flex-wrap">
       <div className="flex items-center border rounded-lg h-11">
         <button
           className="px-3 h-full hover:bg-muted rounded-l-lg disabled:opacity-40"
@@ -77,12 +88,22 @@ export function AddToCart({ product, disabled }: AddToCartProps) {
       </div>
       <Button
         size="lg"
-        className="flex-1"
+        variant="secondary"
+        className="flex-1 min-w-36"
         onClick={handleAdd}
         disabled={disabled}
       >
         <ShoppingCart className="size-4" aria-hidden />
         Add to Cart
+      </Button>
+      <Button
+        size="lg"
+        className="flex-1 min-w-36"
+        onClick={buyNow}
+        disabled={disabled}
+      >
+        <Zap className="size-4" aria-hidden />
+        Buy Now
       </Button>
     </div>
   );
