@@ -64,6 +64,26 @@
   --bs-btn-disabled-border-color: var(--bs-primary);
 }
 
+/* --- Responsive integrity: let grid children shrink ---
+   .app-wrapper is `grid-template-columns: auto 1fr`. Grid tracks
+   default to minmax(auto, 1fr) → they refuse to shrink below a
+   child's min-content width, so one wide table/card inflated the
+   entire page and mobile rendered zoomed-out. min-width:0 lets the
+   track compress; the wide child then scrolls internally instead. */
+.app-main,
+.app-content,
+.app-header,
+.app-footer {
+  min-width: 0;
+}
+.app-content > * {
+  max-width: 100%;
+}
+/* Long tokens (order numbers, SKUs, URLs) wrap instead of widening */
+.app-content :where(td, p, span) {
+  overflow-wrap: break-word;
+}
+
 /* --- Sidebar: LapTech brand gradient (brand-700 → 800 → 950) --- */
 .app-sidebar.laptech-sidebar {
   background-color: #1e3aaf;
@@ -104,4 +124,13 @@
 }
 :where(.app-wrapper, .login-page) :where(b, strong) {
   font-weight: bolder;
+}
+/* Media never overflows its container on small screens */
+:where(.app-wrapper, .login-page) :where(img, video, canvas, svg) {
+  max-width: 100%;
+  height: auto;
+}
+/* Flex/grid items default to min-content → allow them to shrink */
+:where(.app-wrapper, .login-page) :where(.flex, .grid) > :where(*) {
+  min-width: 0;
 }
