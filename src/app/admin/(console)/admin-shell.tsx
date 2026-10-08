@@ -23,7 +23,6 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -193,8 +192,11 @@ export function AdminShell({
 
   // Drive AdminLTE's built-in responsive state: body.sidebar-open slides the
   // fixed sidebar in over the content (<992px) — content is never pushed.
-  // On lg+ the sidebar is static and always visible.
+  // On lg+ the sidebar is static and always visible. sidebar-collapse is
+  // always stripped — combined with sidebar-mini it renders a half-open
+  // icon bar instead of the full drawer.
   useEffect(() => {
+    document.body.classList.remove("sidebar-collapse");
     document.body.classList.toggle("sidebar-open", sidebarOpen);
     return () => document.body.classList.remove("sidebar-open");
   }, [sidebarOpen]);
@@ -252,24 +254,12 @@ export function AdminShell({
 
       {/* ===== Sidebar ===== */}
       <aside className="app-sidebar laptech-sidebar shadow" data-bs-theme="dark">
-        <div className="sidebar-brand">
-          <Link href="/admin" className="brand-link gap-2">
-            <Image
-              src="/logo.png"
-              alt="LapTech"
-              width={110}
-              height={36}
-              className="brand-image h-7 w-auto brightness-0 invert"
-            />
-            <span className="brand-text text-[10px] font-bold uppercase tracking-widest text-brand-200">
-              Admin
-            </span>
-          </Link>
-          {/* X — retracts the overlay sidebar on mobile */}
+        {/* X — retracts the overlay sidebar (mobile only) */}
+        <div className="d-lg-none flex justify-end px-2 pt-2">
           <button
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
-            className="d-lg-none ms-auto me-1 inline-flex size-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+            className="inline-flex size-8 items-center justify-center rounded-lg text-white hover:bg-white/15 transition-colors"
           >
             <X className="size-5" aria-hidden />
           </button>
@@ -328,12 +318,14 @@ export function AdminShell({
         </div>
       </aside>
 
-      {/* Backdrop — tapping outside the drawer retracts it (mobile only) */}
-      <div
-        className="sidebar-overlay d-lg-none"
-        onClick={() => setSidebarOpen(false)}
-        aria-hidden
-      />
+      {/* Backdrop — tapping any space outside the sidebar retracts it (mobile only) */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay d-lg-none"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
+      )}
 
       {/* ===== Main ===== */}
       <main className="app-main">
