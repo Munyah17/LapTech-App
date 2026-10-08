@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Bell,
   ChevronDown,
+  LayoutDashboard,
   LogOut,
   Settings,
   User as UserIcon,
@@ -103,6 +104,10 @@ export function HeaderAuth() {
   }
 
   const items = [
+    // Admins get a quick way back to the console from the storefront
+    ...(user.role === "ADMIN"
+      ? [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }]
+      : []),
     { href: "/account", label: "Notifications", icon: Bell },
     { href: "/account", label: "My Profile", icon: UserIcon },
     { href: "/account", label: "Settings", icon: Settings },

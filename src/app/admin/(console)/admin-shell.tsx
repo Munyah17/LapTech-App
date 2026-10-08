@@ -8,11 +8,11 @@ import {
   BarChart3,
   Bike,
   CalendarCheck,
-  ChevronsLeft,
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
   Megaphone,
+  Menu,
   Package,
   Settings,
   ShieldCheck,
@@ -21,6 +21,7 @@ import {
   Truck,
   Users,
   Wrench,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -188,6 +189,25 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Drive AdminLTE's built-in responsive state: body.sidebar-open slides the
+  // fixed sidebar in over the content (<992px) — content is never pushed.
+  // On lg+ the sidebar is static and always visible.
+  useEffect(() => {
+    document.body.classList.toggle("sidebar-open", sidebarOpen);
+    return () => document.body.classList.remove("sidebar-open");
+  }, [sidebarOpen]);
+
+  // Auto-close the mobile drawer on navigation and Escape.
+  useEffect(() => setSidebarOpen(false), [pathname]);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setSidebarOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="app-wrapper">
@@ -196,12 +216,14 @@ export function AdminShell({
         <div className="container-fluid">
           <ul className="navbar-nav">
             <li className="nav-item">
+              {/* Hamburger — mobile only (d-lg-none); desktop sidebar is static */}
               <button
-                className="nav-link"
-                data-lte-toggle="sidebar"
-                aria-label="Toggle sidebar"
+                className="nav-link d-lg-none"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Open sidebar"
+                aria-expanded={sidebarOpen}
               >
-                <ChevronsLeft className="size-5" aria-hidden />
+                <Menu className="size-5" aria-hidden />
               </button>
             </li>
             <li className="nav-item d-none d-md-block">
@@ -243,6 +265,14 @@ export function AdminShell({
               Admin
             </span>
           </Link>
+          {/* X — retracts the overlay sidebar on mobile */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+            className="d-lg-none ms-auto me-1 inline-flex size-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
         </div>
 
         <div className="sidebar-wrapper">
@@ -297,6 +327,13 @@ export function AdminShell({
           <SidebarUserPanel user={user} />
         </div>
       </aside>
+
+      {/* Backdrop — tapping outside the drawer retracts it (mobile only) */}
+      <div
+        className="sidebar-overlay d-lg-none"
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden
+      />
 
       {/* ===== Main ===== */}
       <main className="app-main">
