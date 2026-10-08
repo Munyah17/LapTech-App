@@ -57,6 +57,19 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* Stop horizontal overscroll gestures (swipe-back play) while
+       keeping vertical pull-to-refresh native. */
+    overscroll-behavior-x: none;
+  }
+  html,
+  body {
+    /* Mobile safety net: anything that sneaks past the viewport edge
+       (off-canvas sidebars, transforms, wide children) is clipped
+       instead of making the whole page pannable/zoomable. `clip`
+       doesn't create a scroll container so position:sticky still works;
+       `hidden` is the fallback for older engines. */
+    overflow-x: hidden;
+    overflow-x: clip;
   }
   body {
     background-color: rgb(var(--background));
